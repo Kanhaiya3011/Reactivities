@@ -12,6 +12,11 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<DataContext>(opt =>{
     opt.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
+builder.Services.AddCors(opt => {
+    opt.AddPolicy("CorsPolicy", policy =>{
+        policy.AllowAnyMethod().AllowAnyHeader().WithOrigins("http://localhost:3000");
+    });
+});
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -34,8 +39,10 @@ if (app.Environment.IsDevelopment())
         var logger = services.GetRequiredService<ILogger<Program>>();
         logger.LogError("An error occurred during migration");
     }
-app.UseAuthorization();
-
 app.MapControllers();
+
+app.UseCors(policyName: "CorsPolicy");
+
+app.UseAuthorization();
 
 await app.RunAsync();
